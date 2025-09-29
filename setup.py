@@ -3,7 +3,7 @@ from setuptools import setup, glob
 from pybind11.setup_helpers import Pybind11Extension, build_ext
 
 
-__version__ = "2.0.4"
+__version__ = "1.0.0"
 
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text(encoding="utf-8")
@@ -18,16 +18,14 @@ ext_modules = [
 ]
 
 setup(
-    name="whr",
-    packages=["whr"],
+    name="whr_chess",
+    packages=["whr_chess"],
     version=__version__,
     license="MIT",
-    author="Tianyi Hao, Pete Schwamb",
-    author_email="haotianyi0@126.com",
-    url="https://github.com/wind23/whole_history_rating/",
-    download_url=f"https://github.com/wind23/whole_history_rating/archive/{__version__}.tar.gz",
-    description="A Python interface incorporating a C++ implementation of the Whole History Rating algorithm proposed by Rémi Coulom. "
-    "The implementation is based on the Ruby code of GoShrine.",
+    author="Viet-Anh Tran",
+    url="https://github.com/CallOn84/whole_history_rating/",
+    download_url=f"https://github.com/CallOn84/whole_history_rating/archive/{__version__}.tar.gz",
+    description="An adaptation of wind23's whole_history_rating for chess",
     long_description=long_description,
     long_description_content_type="text/markdown",
     keywords=["WHR", "whole history rating", "Elo rating"],
