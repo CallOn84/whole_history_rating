@@ -43,11 +43,12 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: pypa/cibuildwheel@v3.1
+      - uses: pypa/cibuildwheel@v2.16.5
         env:
           CIBW_ARCHS_MACOS: auto universal2
           SYSTEM_VERSION_COMPAT: 0
-          CIBW_SKIP: pp37-* pp38-* pp39-* pp31*-macosx*
+          CIBW_SKIP: pp37-* pp38-* pp39-* pp310-* pp311-*
+          CIBW_BUILD: cp38-* cp39-* cp310-* cp311-* cp312-*
 
       - name: Verify clean directory
         run: git diff --exit-code
@@ -66,7 +67,7 @@ jobs:
     if: github.event_name == 'release' && github.event.action == 'published'
 
     steps:
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
