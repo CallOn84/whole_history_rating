@@ -5,7 +5,7 @@ Whole History Rating for Chess
 
 This is an adaptation of wind23's whole_history_rating repository for chess.
 
-The implementation is based on the [Ruby code](https://github.com/goshrine/whole_history_rating) of [GoShrine](http://goshrine.com).
+The original implementation is based on the [Ruby code](https://github.com/goshrine/whole_history_rating) of [GoShrine](http://goshrine.com).
 
 ## Installation
 
