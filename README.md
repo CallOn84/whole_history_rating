@@ -11,8 +11,8 @@ The original implementation is based on the [Ruby code](https://github.com/goshr
 
 To install it from source code:
 
-    git clone https://github.com/CallOn84/whole_history_rating.git
-    pip install ./WHR
+    git clone https://github.com/CallOn84/whr_chess.git
+    pip install ./whr_chess
 
 To build this package from the source code, you will need a recent version of Python 3 installed, along with `setuptools>=42` and `pybind11>=2.10.0`. Furthermore, depending on your operating system, you may also require the installation of the appropriate C++ build environment. If you are uncertain about the required dependencies, you can begin by attempting `pip install` and follow the instructions provided by your system to install the necessary components.
 
