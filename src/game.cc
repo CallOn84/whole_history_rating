@@ -5,11 +5,10 @@
 
 namespace whr {
 
-Game::Game(const std::shared_ptr<Player> black,
-           const std::shared_ptr<Player> white, std::string winner,
-           int time_step, double handicap)
-    : white_player_(white), black_player_(black), time_step_(time_step),
-      handicap_(handicap) {
+Game::Game(const std::shared_ptr<Player> white,
+           const std::shared_ptr<Player> black, std::string winner,
+           int time_step)
+    : white_player_(white), black_player_(black), time_step_(time_step) {
   if (winner == "W") {
     winner_ = Winner::WHITE;
   } else if (winner == "B") {
@@ -21,18 +20,15 @@ Game::Game(const std::shared_ptr<Player> black,
 
 double
 Game::opponents_adjusted_gamma(const std::shared_ptr<Player> player) const {
-  double black_advantage = handicap_;
   double opponent_elo;
-  double rval = 0.;
 
   if (player == white_player_) {
-    opponent_elo = bpd_->elo() + black_advantage;
+    opponent_elo = bpd_->elo() - white_advantage;
   } else {
-    opponent_elo = wpd_->elo() - black_advantage;
+    opponent_elo = wpd_->elo() + white_advantage;
   }
 
-  rval = std::pow(10., opponent_elo / 400.);
-  return rval;
+  return std::pow(10., opponent_elo / 400.);
 }
 
 std::shared_ptr<Player> Game::opponent(const std::shared_ptr<Player> player) {
@@ -46,11 +42,10 @@ std::shared_ptr<Player> Game::opponent(const std::shared_ptr<Player> player) {
 std::string Game::inspect() {
   char buffer[1000];
   std::snprintf(
-      buffer, 1000, "Game: W:%s(%.2f) B:%s(%.2f) winner = %s, handicap = %.2f",
+      buffer, 1000, "Game: W:%s(%.2f) B:%s(%.2f) winner = %s",
       white_player_->get_name().c_str(), wpd_ ? wpd_->get_r() : 0.,
       black_player_->get_name().c_str(), bpd_ ? bpd_->get_r() : 0.,
-      winner_ == Winner::WHITE ? "W" : (winner_ == Winner::BLACK ? "B" : "D"),
-      handicap_);
+      winner_ == Winner::WHITE ? "W" : (winner_ == Winner::BLACK ? "B" : "D"));
   return std::string(buffer);
 }
 

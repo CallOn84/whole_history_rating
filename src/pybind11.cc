@@ -8,7 +8,7 @@ namespace py = pybind11;
 
 PYBIND11_MODULE(whr_core, m) {
   py::class_<whr::Base>(m, "Base")
-      .def(py::init<double, int>(), py::arg("w2") = 300.,
+      .def(py::init<double, int>(), py::arg("w2") = 10.,
            py::arg("virtual_games") = 2)
       .def("print_ordered_ratings", &whr::Base::print_ordered_ratings)
       .def("get_ordered_ratings", &whr::Base::get_ordered_ratings)
@@ -16,10 +16,9 @@ PYBIND11_MODULE(whr_core, m) {
       .def("ratings_for_player", &whr::Base::ratings_for_player,
            py::arg("name"))
       .def("create_games", &whr::Base::create_games, py::arg("games"))
-      .def("create_game", &whr::Base::create_game, py::arg("black"),
-           py::arg("white"), py::arg("winner"), py::arg("time_step"),
-           py::arg("handicap") = 0.)
-      .def("iterate_until_converge", &whr::Base::iterate_until_coverge,
+      .def("create_game", &whr::Base::create_game, py::arg("white"),
+           py::arg("black"), py::arg("winner"), py::arg("time_step"))
+      .def("iterate_until_converge", &whr::Base::iterate_until_converge,
            py::arg("verbose") = true)
       .def("iterate", &whr::Base::iterate, py::arg("count"));
 

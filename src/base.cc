@@ -1,7 +1,9 @@
 #include "whr.h"
 #include <algorithm>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 
 namespace whr {
 Base::Base(double w2, int virtual_games)
@@ -24,7 +26,7 @@ void Base::print_ordered_ratings() const {
     const auto player_days = player->get_days();
     for (size_t i = 0; i < player_days.size(); i++) {
       std::cout << player_days[i]->get_time_step() << ",";
-      std::cout << std::fixed << std::setprecision(2) << player_days[i]->elo()
+      std::cout << std::fixed << std::setprecision(2) << (player_days[i]->elo() + elo_offset)
                 << std::resetiosflags(std::ios::fixed);
       if (i < player_days.size() - 1) {
         std::cout << ";";
@@ -80,25 +82,24 @@ py::list Base::ratings_for_player(std::string name) {
   for (const auto d : player->get_days()) {
     py::list pd_info;
     pd_info.append(d->get_time_step());
-    pd_info.append(d->elo());
+    pd_info.append(d->elo() + elo_offset);
     pd_info.append(std::sqrt(d->get_uncertainty()) * 400. / std::log(10.));
     res.append(pd_info);
   }
   return res;
 }
 
-std::shared_ptr<Game> Base::setup_game(std::string black, std::string white,
-                                       std::string winner, int time_step,
-                                       double handicap) {
-  if (black == white) {
-    std::cerr << "Game players cannot be equal: " << black << " and " << white
+std::shared_ptr<Game> Base::setup_game(std::string white, std::string black,
+                                       std::string winner, int time_step) {
+  if (white == black) {
+    std::cerr << "Game players cannot be equal: " << white << " and " << black
               << std::endl;
     return nullptr;
   }
   std::shared_ptr<Player> white_player = player_by_name(white);
   std::shared_ptr<Player> black_player = player_by_name(black);
   std::shared_ptr<Game> game = std::make_shared<Game>(
-      black_player, white_player, winner, time_step, handicap);
+      white_player, black_player, winner, time_step);
   return game;
 }
 
@@ -110,22 +111,18 @@ void Base::create_games(const py::list games) {
   std::sort(games_list.begin(), games_list.end(),
             [](const py::list g1, const py::list g2) { return g1[3] < g2[3]; });
   for (const py::list game : games_list) {
-    std::string black = py::cast<std::string>(game[0]);
-    std::string white = py::cast<std::string>(game[1]);
+    std::string white = py::cast<std::string>(game[0]);
+    std::string black = py::cast<std::string>(game[1]);
     std::string winner = py::cast<std::string>(game[2]);
     int time_step = py::cast<int>(game[3]);
-    double handicap = 0.;
-    if (game.size() >= 5) {
-      handicap = py::cast<double>(game[4]);
-    }
-    create_game(black, white, winner, time_step, handicap);
+    create_game(white, black, winner, time_step);
   }
 }
 
-void Base::create_game(std::string black, std::string white, std::string winner,
-                       int time_step, double handicap) {
+void Base::create_game(std::string white, std::string black, std::string winner,
+                       int time_step) {
   std::shared_ptr<Game> game =
-      setup_game(black, white, winner, time_step, handicap);
+      setup_game(white, black, winner, time_step);
   if (game != nullptr) {
     add_game(game);
   }
@@ -133,11 +130,25 @@ void Base::create_game(std::string black, std::string white, std::string winner,
 
 void Base::add_game(const std::shared_ptr<Game> game) {
   games_.push_back(game);
-  game->get_white_player()->add_game(game);
-  game->get_black_player()->add_game(game);
+  auto wp = game->get_white_player();
+  auto bp = game->get_black_player();
+  wp->add_game(game);
+  bp->add_game(game);
+
+  wp->run_one_newton_iteration();
+  bp->run_one_newton_iteration();
+  wp->update_uncertainty();
+  bp->update_uncertainty();
+
+  if ((int)games_.size() % 1000 == 0) {
+    run_one_iteration();
+    for (auto &kv : players_) {
+      kv.second->update_uncertainty();
+    }
+  }
 }
 
-int Base::iterate_until_coverge(bool verbose) {
+int Base::iterate_until_converge(bool verbose) {
   int count = 0;
   std::vector<int> ratings, last_ratings;
   int best_iteration;

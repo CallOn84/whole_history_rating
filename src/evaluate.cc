@@ -58,25 +58,23 @@ double Evaluate::get_rating(std::string name, int time_step,
 
 double Evaluate::evaluate_single_game(const EvaluateGame &game,
                                       bool ignore_null_players) const {
-  double black_rating =
-      get_rating(game.black_player, game.time_step, ignore_null_players);
   double white_rating =
       get_rating(game.white_player, game.time_step, ignore_null_players);
-  if (!std::isfinite(black_rating) || !std::isfinite(white_rating)) {
+  double black_rating =
+      get_rating(game.black_player, game.time_step, ignore_null_players);
+  if (!std::isfinite(white_rating) || !std::isfinite(black_rating)) {
     return std::numeric_limits<double>::quiet_NaN();
   }
-  double black_advantage = game.handicap;
-  double white_gamma = std::pow(10., white_rating / 400.);
-  double black_adjusted_gamma =
-      std::pow(10., (black_rating + black_advantage) / 400.);
+  double white_gamma = std::pow(10., (white_rating + white_advantage) / 400.);
+  double black_gamma = std::pow(10., black_rating / 400.);
   switch (game.winner) {
   case Winner::WHITE:
-    return white_gamma / (white_gamma + black_adjusted_gamma);
+    return white_gamma / (white_gamma + black_gamma);
   case Winner::BLACK:
-    return black_adjusted_gamma / (white_gamma + black_adjusted_gamma);
+    return black_gamma / (white_gamma + black_gamma);
   default:
-    return std::sqrt(white_gamma * black_adjusted_gamma) /
-           (white_gamma + black_adjusted_gamma);
+    return std::sqrt(white_gamma * black_gamma) /
+           (white_gamma + black_gamma);
   }
 }
 
@@ -105,16 +103,12 @@ void Evaluate::list_to_games(const py::list games,
   game_list.clear();
   for (size_t i = 0; i < games.size(); i++) {
     py::list game = games[i];
-    std::string black_player = py::cast<std::string>(game[0]);
-    std::string white_player = py::cast<std::string>(game[1]);
+    std::string white_player = py::cast<std::string>(game[0]);
+    std::string black_player = py::cast<std::string>(game[1]);
     std::string winner = py::cast<std::string>(game[2]);
     int time_step = py::cast<int>(game[3]);
-    double handicap = 0.;
-    if (game.size() >= 5) {
-      handicap = py::cast<double>(game[4]);
-    }
     game_list.push_back(
-        EvaluateGame(black_player, white_player, winner, time_step, handicap));
+        EvaluateGame(white_player, black_player, winner, time_step));
   }
 }
 

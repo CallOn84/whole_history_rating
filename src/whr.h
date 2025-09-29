@@ -9,6 +9,8 @@ namespace py = pybind11;
 
 namespace whr {
 const double PI = 3.14159265358979323846;
+const double white_advantage = 32.8;
+const double elo_offset = 2000.;
 
 enum class Winner { WHITE, BLACK, DRAW };
 
@@ -27,13 +29,12 @@ public:
   std::string white_player;
   std::string black_player;
   Winner winner;
-  double handicap;
-  EvaluateGame(std::string black_player, std::string white_player,
-               std::string winner, int time_step, double handicap = 0.)
-      : black_player(black_player), white_player(white_player),
+  EvaluateGame(std::string white_player, std::string black_player,
+               std::string winner, int time_step)
+      : white_player(white_player), black_player(black_player),
         winner(winner == "W" ? Winner::WHITE
                              : (winner == "B" ? Winner::BLACK : Winner::DRAW)),
-        time_step(time_step), handicap(handicap) {}
+        time_step(time_step) {}
 };
 
 class Player : public std::enable_shared_from_this<Player> {
@@ -109,7 +110,6 @@ class Game {
   std::shared_ptr<Player> white_player_;
   std::shared_ptr<Player> black_player_;
   Winner winner_;
-  double handicap_;
   std::shared_ptr<PlayerDay> wpd_;
   std::shared_ptr<PlayerDay> bpd_;
 
@@ -120,8 +120,8 @@ class Game {
   double black_win_probability();
 
 public:
-  Game(const std::shared_ptr<Player> black, const std::shared_ptr<Player> white,
-       std::string winner, int time_step, double handicap = 0.);
+  Game(const std::shared_ptr<Player> white, const std::shared_ptr<Player> black,
+       std::string winner, int time_step);
   int get_time_step() const { return time_step_; }
   Winner get_winner() const { return winner_; }
   std::shared_ptr<Player> get_white_player() const { return white_player_; }
@@ -138,27 +138,31 @@ class Base {
   std::unordered_map<std::string, std::shared_ptr<Player>> players_;
   std::vector<std::string> players_order_;
   std::shared_ptr<Player> player_by_name(std::string name);
-  std::shared_ptr<Game> setup_game(std::string black, std::string white,
-                                   std::string winner, int time_step,
-                                   double handicap);
+  std::shared_ptr<Game> setup_game(std::string white, std::string black,
+                                   std::string winner, int time_step);
   void add_game(const std::shared_ptr<Game> game);
   void run_one_iteration();
 
 public:
-  Base(double w2 = 300., int virtual_games = 2);
+  Base(double w2 = 10., int virtual_games = 2);
   std::unordered_map<std::string, std::shared_ptr<Player>> &get_players() {
     return players_;
   }
+  const std::unordered_map<std::string, std::shared_ptr<Player>> &get_players() const {
+    return players_;
+  }
+
   void print_ordered_ratings() const;
   py::list get_ordered_ratings();
   double log_likelihood() const;
   py::list ratings_for_player(std::string name);
   void create_games(const py::list games);
-  void create_game(std::string black, std::string white, std::string winner,
-                   int time_step, double handicap = 0.);
-  int iterate_until_coverge(bool verbose = true);
+  void create_game(std::string white, std::string black, std::string winner,
+                   int time_step);
+  int iterate_until_converge(bool verbose = true);
   void iterate(int count);
 };
+
 
 class Evaluate {
   std::unordered_map<std::string, std::vector<std::pair<int, double>>>
