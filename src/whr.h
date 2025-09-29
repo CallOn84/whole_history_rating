@@ -1,4 +1,3 @@
-
 #include <memory>
 #include <pybind11/pybind11.h>
 #include <string>
