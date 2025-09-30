@@ -21,6 +21,7 @@ Game::Game(const std::shared_ptr<Player> white,
 double
 Game::opponents_adjusted_gamma(const std::shared_ptr<Player> player) const {
   double opponent_elo;
+  double rval = 0.;
 
   if (player == white_player_) {
     opponent_elo = bpd_->elo() - white_advantage;
@@ -28,7 +29,8 @@ Game::opponents_adjusted_gamma(const std::shared_ptr<Player> player) const {
     opponent_elo = wpd_->elo() + white_advantage;
   }
 
-  return std::pow(10., opponent_elo / 400.);
+  rval = std::pow(10., opponent_elo / 400.);
+  return rval;
 }
 
 std::shared_ptr<Player> Game::opponent(const std::shared_ptr<Player> player) {
