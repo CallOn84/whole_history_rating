@@ -130,22 +130,8 @@ void Base::create_game(std::string white, std::string black, std::string winner,
 
 void Base::add_game(const std::shared_ptr<Game> game) {
   games_.push_back(game);
-  auto wp = game->get_white_player();
-  auto bp = game->get_black_player();
-  wp->add_game(game);
-  bp->add_game(game);
-
-  wp->run_one_newton_iteration();
-  bp->run_one_newton_iteration();
-  wp->update_uncertainty();
-  bp->update_uncertainty();
-
-  if ((int)games_.size() % 1000 == 0) {
-    run_one_iteration();
-    for (auto &kv : players_) {
-      kv.second->update_uncertainty();
-    }
-  }
+  game->get_white_player()->add_game(game);
+  game->get_black_player()->add_game(game);
 }
 
 int Base::iterate_until_converge(bool verbose) {
