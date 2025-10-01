@@ -7,7 +7,7 @@ Evaluate::Evaluate(Base &base) {
   for (const auto &player : base.get_players()) {
     std::vector<std::pair<int, double>> ratings;
     for (const auto d : player.second->get_days()) {
-      ratings.push_back(std::pair<int, double>(d->get_time_step(), d->elo()));
+      ratings.push_back(std::pair<int, double>(d->get_time_step(), d->elo() + elo_offset));
     }
     std::sort(
         ratings.begin(), ratings.end(),
